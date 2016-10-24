@@ -1,0 +1,127 @@
+<?php
+
+namespace softines\Http\Controllers;
+
+use Illuminate\Support\Facades\DB; //IMPORTAÇOES
+use softines\venda;
+use softines\Http\Requests\vendaRequest;
+use Request;
+use Illuminate\Support\Facades\Input;
+use Auth;
+
+class VendaController extends Controller
+{
+public function __construct()
+{
+$this->middleware('auth'); #para ir direto para o login quando clicar em algum link
+//['only' => ['adiciona', 'remove']]); somente pedir login quando clicar em links citados
+}
+  public function index()
+{
+    $search = \Request::get('search'); 
+    $venda = venda::where('nomeproduto','like','%'.$search.'%')
+        ->orderBy('nomeproduto')
+        ->paginate(20);
+ 
+    return view('venda.listagem',compact('venda'));
+}
+
+    public function lista(){
+
+    	$venda = venda::all();
+    	return view ('venda.listagem')->with('venda', $venda);
+    }
+
+    public function mostra($id){
+
+    	$resposta = DB::select('select * from venda where id=?',[$id]);
+    if(empty($resposta)){
+
+    	return "Essa venda nao aconteceu";
+    }
+    return view('venda.detalhes')->with('p', $resposta[0]);
+    }
+
+    public function novo(){
+
+    	return view ('venda.formulario');
+    }
+
+    public function adiciona(vendaRequest $resquest){
+
+ $nomeproduto = Request::input('nomeproduto');
+ $nomecomprador = Request::input('nomecomprador');
+ $valor = Request::input('valor');
+ $categoria = Request::input('categoria');
+ $quantidadevenda = Request::input('quantidadevenda');
+ $pagamento =Request::input('pagamento');
+
+DB::insert('insert into venda (nomeproduto, nomecomprador, valor, categoria, quantidadevenda, pagamento ) values (?, ?, ?, ?, ?, ?)',
+array($nomeproduto, $nomecomprador, $valor, $categoria, $quantidadevenda, $pagamento));
+
+
+return redirect()
+->action('VendaController@lista')
+->withInput(Request::only('nomeproduto'));
+}
+
+public function listaJson(){
+       $venda = venda::all();
+	return response()->json($venda);
+
+}
+
+public function remove($id){
+$venda = venda::find($id);
+$venda->delete();
+return redirect()
+->action('VendaController@lista');
+}
+
+public function edit($id)
+    {
+      
+
+   $venda = venda::find($id);
+
+        return view('venda.edit')
+                        ->with('p', $venda);
+
+          }
+
+    public function update(vendaRequest $request, $id){
+
+
+$params = $request->all();
+$venda = venda:: findOrFail($id);
+$venda->fill($params)->save();
+         
+            return redirect()
+              ->action('VendaController@lista')
+              ->withInput();
+          }
+ public function editar($id)
+    {
+      
+
+   $venda = venda::find($id);
+
+        return view('venda.editconta')
+                        ->with('p', $venda);
+
+          }
+
+    public function atualizar(vendaRequest $request, $id){
+
+
+$params = $request->all();
+$venda = venda:: findOrFail($id);
+$venda->fill($params)->save();
+         
+            return redirect()
+              ->action('VendaController@lista')
+              ->withInput();
+          }
+
+
+}
