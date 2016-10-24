@@ -1,0 +1,16 @@
+<?php
+
+namespace softines;
+
+use Illuminate\Database\Eloquent\Model;
+
+class venda extends Model
+{
+     protected $table = 'venda';
+    public $timestamps = false;
+
+    protected $fillable = array('nomeproduto', 'nomecomprador', 'valor', 'categoria', 'quantidadevenda', 'pagamento');
+
+  
+  protected $guarded = ['id'];
+}
